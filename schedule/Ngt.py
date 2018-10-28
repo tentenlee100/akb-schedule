@@ -1,4 +1,4 @@
-from scheule.dataType.Schedule import *
+from schedule.dataType.Schedule import *
 
 
 # 網頁: https://ngt48.jp/schedule
@@ -37,7 +37,7 @@ class Ngt(object):
     def __init__(self, query_date):
         self.query_date = query_date
 
-    def get_scheule(self) -> [Schedule]:
+    def get_schedule(self) -> [Schedule]:
 
         schedule_list = []
         schedule_list.append(Schedule())
