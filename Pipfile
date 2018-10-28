@@ -8,6 +8,3 @@ requests = "*"
 "beautifulsoup4" = "*"
 
 [dev-packages]
-
-[requires]
-python_version = "3.6"
