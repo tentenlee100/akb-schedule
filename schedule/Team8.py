@@ -1,4 +1,4 @@
-from scheule.dataType.Schedule import *
+from schedule.dataType.Schedule import *
 
 # TEAM 8行事曆
 # 網頁: https://toyota-team8.jp/schedule/index.php
@@ -10,7 +10,7 @@ class Team8(object):
     def __init__(self, query_date):
         self.query_date = query_date
 
-    def get_scheule(self) -> [Schedule]:
+    def get_schedule(self) -> [Schedule]:
 
         schedule_list = []
         schedule_list.append(Schedule())
