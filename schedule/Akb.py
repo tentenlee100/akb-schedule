@@ -34,7 +34,7 @@ class Akb(object):
         body = {'month': month, 'year': year, 'category': 0}
         url = 'https://www.akb48.co.jp/public/api/schedule/calendar/'
         response_json = requests.post(url, data=body).json()
-        today_key = year + '_' + month + '_' + day
+        today_key = year + '_' + month + '_' + str(int(day))
         members_api = 'https://www.akb48.co.jp/public/api/member/list/'
         members_dic = requests.post(members_api).json()["data"]
         # print(json.dumps(response_json, ensure_ascii=False))
@@ -70,6 +70,6 @@ class Akb(object):
 
 
 if __name__ == '__main__':
-    akb = Akb("2018/10/27")
+    akb = Akb("2018/10/29")
     akb_schedule = akb.get_schedule()
     print(akb_schedule)
