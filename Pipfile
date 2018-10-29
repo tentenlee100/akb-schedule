@@ -6,5 +6,7 @@ name = "pypi"
 [packages]
 requests = "*"
 "beautifulsoup4" = "*"
+lxml = "*"
+pyquery = "*"
 
 [dev-packages]

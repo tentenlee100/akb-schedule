@@ -49,7 +49,7 @@ class Akb(object):
             schedule = Schedule()
             schedule.title = schedule_dic["title"]
             if schedule_dic["parent_category"] in self.category:
-                schedule.type = self.category[schedule_dic["parent_category"]]
+                schedule.event_type = self.category[schedule_dic["parent_category"]]
             schedule.start_time = schedule_dic["date"][-8:-3]
             schedule.end_time = schedule_dic["end_date"][-8:-3]
             member_key_list = schedule_dic["member"].split(',')
