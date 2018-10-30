@@ -37,12 +37,11 @@ class Stu(object):
         except (TypeError, ValueError):
             print("Please check your input date format (ex. 2018/10/10)")
 
-    def _parse_event(self, html):
+    def _parse_event(self, html) -> list:
         """Parse HTML string to get basic event list.
 
         Args:
             html: (string) html page
-            is_get_all: (Boolean) get all events (don't check event date)
 
         Returns:
             event list.
