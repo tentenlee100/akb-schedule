@@ -40,14 +40,13 @@ class Ngt(object):
         self.query_date = query_date
         self.schedule_list = []
 
-    def request_ngt(self, calendarId, ngt_type):
+    def request_ngt(self, calendar_id, ngt_type):
         time_start = datetime.datetime.strptime(self.query_date, '%Y/%m/%d').strftime('%Y-%m-%dT00:00:00+09:00')
-        time_end = datetime.datetime.strptime(self.query_date, '%Y/%m/%d') + datetime.timedelta(days=1)
-        time_end = time_end.strftime('%Y-%m-%dT00:00:00+09:00')
+        time_end = datetime.datetime.strptime(self.query_date, '%Y/%m/%d').strftime('%Y-%m-%dT23:59:59+09:00')
 
         url = "https://clients6.google.com/calendar/v3/calendars/{calendarId}/events"
         querystring = {
-            "calendarId": calendarId,
+            "calendarId": calendar_id,
             "singleEvents": "true",
             "timeZone": "Asia/Tokyo",
             "maxAttendees": "1",
@@ -65,7 +64,6 @@ class Ngt(object):
         self.data_output(datas, ngt_type)
 
     def data_output(self, datas, ngt_type):
-        global schedule_list
         for data in datas['items']:
             schedule = Schedule()
             # print('summary: ', data['summary'])
@@ -101,7 +99,7 @@ class Ngt(object):
         audition = "6sqi65kh3u38tmpjibnmordj10@group.calendar.google.com"
         birthday = "crnkrfg8jl3r8csfjjodj09uag@group.calendar.google.com"
         other = "j9dlo0i5cjtu4v1cqe16jgu50g@group.calendar.google.com"
-        holidays = "ja.japanese#holiday@group.v.calendar.google.com"
+        # holidays = "ja.japanese#holiday@group.v.calendar.google.com"
         release = "m2ajd5t81ig9at9bmvnqn48otk@group.calendar.google.com"
         radio = "madmrl5ev8ueva1kfddn5oh08g@group.calendar.google.com"
         ngt48cal = "ngt48cal@gmail.com"
@@ -116,7 +114,7 @@ class Ngt(object):
         self.request_ngt(audition, 'オーディション')
         self.request_ngt(birthday, '誕生日')
         self.request_ngt(other, 'その他')
-        self.request_ngt(holidays, '日本の祝日')
+        # self.request_ngt(holidays, '日本の祝日')
         self.request_ngt(release, 'リリース')
         self.request_ngt(radio, 'ラジオ')
         self.request_ngt(ngt48cal, 'ngt48cal@gmail.com')
@@ -127,6 +125,7 @@ class Ngt(object):
         self.request_ngt(magazine, '新聞・雑誌')
         self.request_ngt(web, 'WEB')
 
+        self.schedule_list.sort(key=lambda x: x.start_time)
         return self.schedule_list
 
 
