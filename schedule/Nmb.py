@@ -1,8 +1,6 @@
-import time
 import datetime
 import requests
 from schedule.dataType.Schedule import *
-
 
 
 # 網頁: http://www.nmb48.com/
@@ -33,65 +31,71 @@ from schedule.dataType.Schedule import *
 #     写メ会: nodnglo3pr5ep5bocb4dg3qpm0@group.calendar.google.com
 #     テレビ: oug148i963c3g23drkmgd4brbk@group.calendar.google.com
 
+
 class Nmb(object):
     query_date = ""  # 查詢時間 時間格式 yyyy/MM/dd ex: 2018/08/10
 
     def __init__(self, query_date):
         self.query_date = query_date
         self.schedule_list = []
-    
-    def request_nmb(self, calendarId, nmb_type):
-        time_start = datetime.datetime.strptime(self.query_date, '%Y/%m/%d').strftime('%Y-%m-%dT03:00:00+09:00')
-        time_end = datetime.datetime.strptime(self.query_date, '%Y/%m/%d') + datetime.timedelta(days=1)
-        time_end = time_end.strftime('%Y-%m-%dT03:00:00+09:00')
+
+    def request_nmb(self, calendar_id, nmb_type):
+        query_time_time = datetime.datetime.strptime(self.query_date, '%Y/%m/%d')
+
+        if nmb_type == 'テレビ' or nmb_type == 'ラジオ':
+            time_start = query_time_time.strftime('%Y-%m-%dT03:59:59+09:00')
+            time_end = query_time_time + datetime.timedelta(days=1)
+            time_end = time_end.strftime('%Y-%m-%dT03:59:59+09:00')
+        else:
+            time_start = query_time_time.strftime('%Y-%m-%dT00:00:00+09:00')
+            time_end = query_time_time.strftime('%Y-%m-%dT23:59:59+09:00')
 
         url = "https://clients6.google.com/calendar/v3/calendars/{calendarId}/events"
         querystring = {
-            "calendarId":calendarId,
-            "singleEvents":"true",
-            "timeZone":"Asia/Tokyo",
-            "maxAttendees":"1",
-            "maxResults":"250",
-            "sanitizeHtml":"true",
-            "timeMin":time_start,
-            "timeMax":time_end,
-            "key":"AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
+            "calendarId": calendar_id,
+            "singleEvents": "true",
+            "timeZone": "Asia/Tokyo",
+            "maxAttendees": "1",
+            "maxResults": "250",
+            "sanitizeHtml": "true",
+            "timeMin": time_start,
+            "timeMax": time_end,
+            "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
         }
-
         response = requests.request("GET", url, params=querystring)
-        #print(response.text)
-        datas = response.json()
-        #print(datas['items'])
-        self.data_output(datas, nmb_type)
+        # print(response.text)
+        j = response.json()
+        # print(datas['items'])
+        self.data_output(j, nmb_type)
 
     def data_output(self, datas, nmb_type):
-        global schedule_list
+
         for data in datas['items']:
             schedule = Schedule()
-            #print('summary: ', data['summary'])
+            # print('summary: ', data['summary'])
             schedule.title = data['summary']
             schedule.event_type = nmb_type
             if 'dateTime' in data['start']:
-                #print('start: ', data['start']['dateTime'])
+                # print('start: ', data['start']['dateTime'])
                 schedule.start_time = data['start']['dateTime'][11:16]
                 if int(schedule.start_time[0:2]) <= 3:
-                	schedule.start_time = str(int(schedule.start_time[0:2])+24) + schedule.start_time[2:]
+                    schedule.start_time = str(int(schedule.start_time[0:2]) + 24) + schedule.start_time[2:]
             if 'dateTime' in data['end']:
-                #print('end: ', data['end']['dateTime'])
+                # print('end: ', data['end']['dateTime'])
                 schedule.end_time = data['end']['dateTime'][11:16]
                 if int(schedule.end_time[0:2]) < 3:
-                	schedule.end_time = str(int(schedule.end_time[0:2])+24) + schedule.end_time[2:]
+                    schedule.end_time = str(int(schedule.end_time[0:2]) + 24) + schedule.end_time[2:]
             if 'date' in data['start']:
-                #print('start: ', data['start']['date'])
+                # print('start: ', data['start']['date'])
                 schedule.start_time = ""
             if 'date' in data['end']:
-                #print('end: ', data['end']['date'])
+                # print('end: ', data['end']['date'])
                 schedule.end_time = ""
             if 'description' in data:
-                #print('description: ', data['description'])
+                # print('description: ', data['description'])
                 schedule.description = data['description']
             if 'location' in data:
-                #print('location: ', data['location'])
+                # print('location: ', data['location'])
                 schedule.location = data['location']
             self.schedule_list.append(schedule)
 
@@ -125,4 +129,11 @@ class Nmb(object):
         self.request_nmb(shamekai, '写メ会')
         self.request_nmb(tv, 'テレビ')
 
+        self.schedule_list.sort(key=lambda x: x.start_time)
         return self.schedule_list
+
+
+if __name__ == '__main__':
+    result = Nmb("2018/11/01").get_schedule()
+    print(result)
+    print(f"total: {len(result)} events")

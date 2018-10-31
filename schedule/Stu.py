@@ -58,7 +58,7 @@ class Stu(object):
         for event in root.items():
             result = pq(event.html())
 
-            qdate = f"{self.today.month}.{self.today.day}"
+            qdate = "{:0>2}.{:0>2}".format(self.today.month, self.today.day)
             # match today (ex. "10.29")
             if self.is_get_all_event or (qdate == result("dt").text()):
                 event_list.append({

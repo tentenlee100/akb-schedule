@@ -52,7 +52,10 @@ class Akb(object):
                 schedule.event_type = self.category[schedule_dic["parent_category"]]
             schedule.start_time = schedule_dic["date"][-8:-3]
             schedule.end_time = schedule_dic["end_date"][-8:-3]
-            member_key_list = schedule_dic["member"].split(',')
+            if schedule_dic["member"]:
+                member_key_list = schedule_dic["member"].split(',')
+            else:
+                member_key_list = []
             # print(member_key_list)
 
             if members_dic and len(member_key_list) > 0:
