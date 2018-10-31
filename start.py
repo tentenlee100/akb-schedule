@@ -21,6 +21,7 @@ def main(query_date, group_name):
             print("-" * 20)
     elif group_name in ['akb', 'akb48']:
         result = Akb(query_date).get_schedule()
+        print(result)
     elif group_name in ['team8', 't8']:
         result = Team8(query_date).get_schedule()
         print(result)
@@ -47,11 +48,12 @@ def main(query_date, group_name):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description='The AKB48 group schedule script.')
+
+    parser.add_argument('name', type=str, nargs='?', default='all',
+                        help='Group name: ex. team8')
     parser.add_argument('query_date', type=str, nargs='?',
                         default=datetime.today().strftime("%Y/%m/%d"),
                         help='ex. 2018/10/30')
 
-    parser.add_argument('name', type=str, nargs='?', default='all',
-                        help='Group name: ex. team8')
     args = parser.parse_args()
     main(query_date=args.query_date, group_name=args.name)
