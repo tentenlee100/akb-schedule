@@ -40,9 +40,15 @@ class Nmb(object):
         self.schedule_list = []
 
     def request_nmb(self, calendar_id, nmb_type):
-        time_start = datetime.datetime.strptime(self.query_date, '%Y/%m/%d').strftime('%Y-%m-%dT03:00:00+09:00')
-        time_end = datetime.datetime.strptime(self.query_date, '%Y/%m/%d') + datetime.timedelta(days=1)
-        time_end = time_end.strftime('%Y-%m-%dT03:00:00+09:00')
+        query_time_time = datetime.datetime.strptime(self.query_date, '%Y/%m/%d')
+
+        if nmb_type == 'テレビ' or nmb_type == 'ラジオ':
+            time_start = query_time_time.strftime('%Y-%m-%dT03:59:59+09:00')
+            time_end = query_time_time + datetime.timedelta(days=1)
+            time_end = time_end.strftime('%Y-%m-%dT03:59:59+09:00')
+        else:
+            time_start = query_time_time.strftime('%Y-%m-%dT00:00:00+09:00')
+            time_end = query_time_time.strftime('%Y-%m-%dT23:59:59+09:00')
 
         url = "https://clients6.google.com/calendar/v3/calendars/{calendarId}/events"
         querystring = {
@@ -56,12 +62,11 @@ class Nmb(object):
             "timeMax": time_end,
             "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
         }
-
         response = requests.request("GET", url, params=querystring)
         # print(response.text)
-        datas = response.json()
+        j = response.json()
         # print(datas['items'])
-        self.data_output(datas, nmb_type)
+        self.data_output(j, nmb_type)
 
     def data_output(self, datas, nmb_type):
 
@@ -124,6 +129,7 @@ class Nmb(object):
         self.request_nmb(shamekai, '写メ会')
         self.request_nmb(tv, 'テレビ')
 
+        self.schedule_list.sort(key=lambda x: x.start_time)
         return self.schedule_list
 
 
