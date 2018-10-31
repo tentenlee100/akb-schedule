@@ -1,4 +1,3 @@
-import time
 import datetime
 import requests
 from schedule.dataType.Schedule import *
@@ -40,7 +39,7 @@ class Ngt(object):
     def __init__(self, query_date):
         self.query_date = query_date
         self.schedule_list = []
-    
+
     def request_ngt(self, calendarId, ngt_type):
         time_start = datetime.datetime.strptime(self.query_date, '%Y/%m/%d').strftime('%Y-%m-%dT00:00:00+09:00')
         time_end = datetime.datetime.strptime(self.query_date, '%Y/%m/%d') + datetime.timedelta(days=1)
@@ -48,51 +47,51 @@ class Ngt(object):
 
         url = "https://clients6.google.com/calendar/v3/calendars/{calendarId}/events"
         querystring = {
-            "calendarId":calendarId,
-            "singleEvents":"true",
-            "timeZone":"Asia/Tokyo",
-            "maxAttendees":"1",
-            "maxResults":"250",
-            "sanitizeHtml":"true",
-            "timeMin":time_start,
-            "timeMax":time_end,
-            "key":"AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
+            "calendarId": calendarId,
+            "singleEvents": "true",
+            "timeZone": "Asia/Tokyo",
+            "maxAttendees": "1",
+            "maxResults": "250",
+            "sanitizeHtml": "true",
+            "timeMin": time_start,
+            "timeMax": time_end,
+            "key": "AIzaSyBNlYH01_9Hc5S1J9vuFmu2nUqBZJNAXxs"
         }
 
         response = requests.request("GET", url, params=querystring)
-        #print(response.text)
+        # print(response.text)
         datas = response.json()
-        #print(datas['items'])
+        # print(datas['items'])
         self.data_output(datas, ngt_type)
 
     def data_output(self, datas, ngt_type):
         global schedule_list
         for data in datas['items']:
             schedule = Schedule()
-            #print('summary: ', data['summary'])
+            # print('summary: ', data['summary'])
             schedule.title = data['summary']
             schedule.event_type = ngt_type
             if 'dateTime' in data['start']:
-                #print('start: ', data['start']['dateTime'])
+                # print('start: ', data['start']['dateTime'])
                 schedule.start_time = data['start']['dateTime'][11:16]
                 if int(schedule.start_time[0:2]) <= 3:
-                	schedule.start_time = str(int(schedule.start_time[0:2])+24) + schedule.start_time[2:]
+                    schedule.start_time = str(int(schedule.start_time[0:2]) + 24) + schedule.start_time[2:]
             if 'dateTime' in data['end']:
-                #print('end: ', data['end']['dateTime'])
+                # print('end: ', data['end']['dateTime'])
                 schedule.end_time = data['end']['dateTime'][11:16]
                 if int(schedule.end_time[0:2]) < 3:
-                	schedule.end_time = str(int(schedule.end_time[0:2])+24) + schedule.end_time[2:]
+                    schedule.end_time = str(int(schedule.end_time[0:2]) + 24) + schedule.end_time[2:]
             if 'date' in data['start']:
-                #print('start: ', data['start']['date'])
+                # print('start: ', data['start']['date'])
                 schedule.start_time = ""
             if 'date' in data['end']:
-                #print('end: ', data['end']['date'])
+                # print('end: ', data['end']['date'])
                 schedule.end_time = ""
             if 'description' in data:
-                #print('description: ', data['description'])
+                # print('description: ', data['description'])
                 schedule.description = data['description']
             if 'location' in data:
-                #print('location: ', data['location'])
+                # print('location: ', data['location'])
                 schedule.location = data['location']
             self.schedule_list.append(schedule)
 
@@ -129,3 +128,9 @@ class Ngt(object):
         self.request_ngt(web, 'WEB')
 
         return self.schedule_list
+
+
+if __name__ == '__main__':
+    result = Ngt("2018/11/01").get_schedule()
+    print(result)
+    print(f"total: {len(result)} events")
