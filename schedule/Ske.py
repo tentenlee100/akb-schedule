@@ -31,16 +31,13 @@ class Ske(object):
         query_date_key = '{year}_{month}_{day}'.format(year=query_year, month=query_month, day=int(query_day))
 
         schedule_list_url = 'http://www.ske48.co.jp/schedule/calendar.php?y={year}&m={month}'.format(year=query_year, month=query_month)
-        r = requests.get(schedule_list_url)
-        r.encoding = 'utf-8'
-        html = r.text
-        soup = BeautifulSoup(html, 'html.parser')
+        schedule_list_html = get_html(schedule_list_url)
 
-        days_in_month = soup.select('table[title="SCHEDULE"] > a[name]')
+        days_in_month = schedule_list_html.select('table[title="SCHEDULE"] > a[name]')
         schedule_data = {}
         for day in days_in_month:
             day_number = day.get('name')
-            schedule_in_day = soup.select('table[title="SCHEDULE"] > a[name="{day}"] + tr li'.format(day=day_number))
+            schedule_in_day = schedule_list_html.select('table[title="SCHEDULE"] > a[name="{day}"] + tr li'.format(day=day_number))
             date = '{year}_{month}_{day}'.format(year=query_year, month=query_month, day=day_number)
             schedule_data[date] = []
             for event in schedule_in_day:
@@ -52,3 +49,10 @@ class Ske(object):
 
         schedule_list = schedule_data.get(query_date_key)
         return schedule_list
+
+
+def get_html(url):
+    r = requests.get(url)
+    r.encoding = 'utf-8'
+    html = r.text
+    return BeautifulSoup(html, 'html.parser')
