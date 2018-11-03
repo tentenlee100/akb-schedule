@@ -32,8 +32,8 @@ class Ske(object):
     def _get_event_detail(self, link, category):
         url = 'http://www.ske48.co.jp/schedule/?{query_params}'.format(query_params=link[3:])
         html = self._get_html(url)
-        member = [a.string for a in html.select('.detail span > a')]
-        return member
+        members = [a.string for a in html.select('.memberProfile span > a')]
+        return members
 
     def get_schedule(self) -> [Schedule]:
         query_date = time.strptime(self.query_date, '%Y/%m/%d')
@@ -55,11 +55,11 @@ class Ske(object):
             for event in schedule_in_day:
                 category = event.get('class')[0]
                 event_link = event.find('a').get('href')
-                member = self._get_event_detail(event_link, category)
+                members = self._get_event_detail(event_link, category)
                 schedule = Schedule()
                 schedule.event_type = self.category.get(category, '')
                 schedule.title = event.find('a').string
-                schedule.member = member
+                schedule.members = members
                 schedule_data[date].append(schedule)
 
         schedule_list = schedule_data.get(query_date_key)
