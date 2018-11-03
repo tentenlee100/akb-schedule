@@ -41,14 +41,24 @@ class Ske(object):
             date = '{year}_{month}_{day}'.format(year=query_year, month=query_month, day=day_number)
             schedule_data[date] = []
             for event in schedule_in_day:
-                schedule = Schedule()
                 category = event.get('class')[0]
+                event_link = event.find('a').get('href')
+                member = get_event_detail(event_link, category)
+                schedule = Schedule()
                 schedule.event_type = self.category.get(category, '')
                 schedule.title = event.find('a').string
+                schedule.member = member
                 schedule_data[date].append(schedule)
 
         schedule_list = schedule_data.get(query_date_key)
         return schedule_list
+
+
+def get_event_detail(link, category):
+    url = 'http://www.ske48.co.jp/schedule/?{query_params}'.format(query_params=link[3:])
+    html = get_html(url)
+    member = [a.string for a in html.select('.detail span > a')]
+    return member
 
 
 def get_html(url):
