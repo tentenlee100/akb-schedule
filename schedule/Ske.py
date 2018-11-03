@@ -23,6 +23,18 @@ class Ske(object):
             'bday': '誕生日',
         }
 
+    def _get_html(self, url):
+        r = requests.get(url)
+        r.encoding = 'utf-8'
+        html = r.text
+        return BeautifulSoup(html, 'html.parser')
+
+    def _get_event_detail(self, link, category):
+        url = 'http://www.ske48.co.jp/schedule/?{query_params}'.format(query_params=link[3:])
+        html = self._get_html(url)
+        member = [a.string for a in html.select('.detail span > a')]
+        return member
+
     def get_schedule(self) -> [Schedule]:
         query_date = time.strptime(self.query_date, '%Y/%m/%d')
         query_year = time.strftime('%Y', query_date)
@@ -31,7 +43,7 @@ class Ske(object):
         query_date_key = '{year}_{month}_{day}'.format(year=query_year, month=query_month, day=int(query_day))
 
         schedule_list_url = 'http://www.ske48.co.jp/schedule/calendar.php?y={year}&m={month}'.format(year=query_year, month=query_month)
-        schedule_list_html = get_html(schedule_list_url)
+        schedule_list_html = self._get_html(schedule_list_url)
 
         days_in_month = schedule_list_html.select('table[title="SCHEDULE"] > a[name]')
         schedule_data = {}
@@ -43,7 +55,7 @@ class Ske(object):
             for event in schedule_in_day:
                 category = event.get('class')[0]
                 event_link = event.find('a').get('href')
-                member = get_event_detail(event_link, category)
+                member = self._get_event_detail(event_link, category)
                 schedule = Schedule()
                 schedule.event_type = self.category.get(category, '')
                 schedule.title = event.find('a').string
@@ -52,17 +64,3 @@ class Ske(object):
 
         schedule_list = schedule_data.get(query_date_key)
         return schedule_list
-
-
-def get_event_detail(link, category):
-    url = 'http://www.ske48.co.jp/schedule/?{query_params}'.format(query_params=link[3:])
-    html = get_html(url)
-    member = [a.string for a in html.select('.detail span > a')]
-    return member
-
-
-def get_html(url):
-    r = requests.get(url)
-    r.encoding = 'utf-8'
-    html = r.text
-    return BeautifulSoup(html, 'html.parser')
