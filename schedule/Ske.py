@@ -39,28 +39,22 @@ class Ske(object):
         query_date = time.strptime(self.query_date, '%Y/%m/%d')
         query_year = time.strftime('%Y', query_date)
         query_month = time.strftime('%m', query_date)
-        query_day = time.strftime('%d', query_date)
-        query_date_key = '{year}_{month}_{day}'.format(year=query_year, month=query_month, day=int(query_day))
+        query_day = int(time.strftime('%d', query_date))
 
         schedule_list_url = 'http://www.ske48.co.jp/schedule/calendar.php?y={year}&m={month}'.format(year=query_year, month=query_month)
         schedule_list_html = self._get_html(schedule_list_url)
 
-        days_in_month = schedule_list_html.select('table[title="SCHEDULE"] > a[name]')
-        schedule_data = {}
-        for day in days_in_month:
-            day_number = day.get('name')
-            schedule_in_day = schedule_list_html.select('table[title="SCHEDULE"] > a[name="{day}"] + tr li'.format(day=day_number))
-            date = '{year}_{month}_{day}'.format(year=query_year, month=query_month, day=day_number)
-            schedule_data[date] = []
-            for event in schedule_in_day:
-                category = event.get('class')[0]
-                event_link = event.find('a').get('href')
-                members = self._get_event_detail(event_link, category)
-                schedule = Schedule()
-                schedule.event_type = self.category.get(category, '')
-                schedule.title = event.find('a').string
-                schedule.members = members
-                schedule_data[date].append(schedule)
+        schedule_list = []
+        event_list = schedule_list_html.select(
+            'table[title="SCHEDULE"] > a[name="{day}"] + tr li'.format(day=query_day))
+        for event in event_list:
+            category = event.get('class')[0]
+            event_link = event.find('a').get('href')
+            members = self._get_event_detail(event_link, category)
+            schedule = Schedule()
+            schedule.event_type = self.category.get(category, '')
+            schedule.title = event.find('a').string
+            schedule.members = members
+            schedule_list.append(schedule)
 
-        schedule_list = schedule_data.get(query_date_key)
         return schedule_list
