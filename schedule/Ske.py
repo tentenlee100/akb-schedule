@@ -1,7 +1,7 @@
 import time
 import requests
 from bs4 import BeautifulSoup
-from .dataType.Schedule import *
+from schedule.dataType.Schedule import *
 
 # 網頁: http://www.ske48.co.jp/schedule/calendar.php
 
@@ -58,3 +58,9 @@ class Ske(object):
             schedule_list.append(schedule)
 
         return schedule_list
+
+
+if __name__ == '__main__':
+    result = Ske("2018/11/05").get_schedule()
+    print(result)
+    print(f"total: {len(result)} events")
