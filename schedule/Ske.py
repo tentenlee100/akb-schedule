@@ -47,7 +47,7 @@ class Ske(object):
             if before2.isdigit() and end2.isdigit():
                 start_time = before2 + ":" + end2
             elif before1.isdigit() and end2.isdigit():
-                start_time = before1 + ":" + end2
+                start_time = "0" + before1 + ":" + end2
 
         return {
             'members': members,

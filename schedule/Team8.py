@@ -118,7 +118,7 @@ class Team8(object):
                         if before2.isdigit() and end2.isdigit():
                             s.start_time = before2 + ":" + end2
                         elif before1.isdigit() and end2.isdigit():
-                            s.start_time = before1 + ":" + end2
+                            s.start_time = "0" + before1 + ":" + end2
 
 
                     # handle member string in html text
