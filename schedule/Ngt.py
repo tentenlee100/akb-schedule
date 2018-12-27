@@ -1,7 +1,7 @@
 import datetime
 import requests
 from schedule.dataType.Schedule import *
-
+from bs4 import BeautifulSoup
 
 # 網頁: https://ngt48.jp/schedule
 #
@@ -87,7 +87,9 @@ class Ngt(object):
                 schedule.end_time = ""
             if 'description' in data:
                 # print('description: ', data['description'])
-                schedule.description = data['description']
+                description = data['description']
+                soup = BeautifulSoup(description, 'html.parser').get_text()
+                schedule.description = soup
             if 'location' in data:
                 # print('location: ', data['location'])
                 schedule.location = data['location']
@@ -130,6 +132,6 @@ class Ngt(object):
 
 
 if __name__ == '__main__':
-    result = Ngt("2018/11/01").get_schedule()
+    result = Ngt("2018/12/26").get_schedule()
     print(result)
     print(f"total: {len(result)} events")
