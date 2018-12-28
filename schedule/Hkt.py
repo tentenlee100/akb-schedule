@@ -45,7 +45,11 @@ class Hkt(object):
             category = event.get('class')[0]
             schedule = Schedule()
             schedule.event_type = self.CATEGORY.get(category, '')
-            schedule.title = event.find('a').string
+            schedule.title = event.get_text().strip()
             schedule_list.append(schedule)
 
         return schedule_list
+
+if __name__ == '__main__':
+    result = Hkt("2018/12/29").get_schedule()
+    print(result)
