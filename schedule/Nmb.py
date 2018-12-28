@@ -1,6 +1,7 @@
 import datetime
 import requests
 from schedule.dataType.Schedule import *
+from bs4 import BeautifulSoup
 
 
 # 網頁: http://www.nmb48.com/
@@ -93,7 +94,9 @@ class Nmb(object):
                 schedule.end_time = ""
             if 'description' in data:
                 # print('description: ', data['description'])
-                schedule.description = data['description']
+                description = data['description']
+                soup = BeautifulSoup(description, 'html.parser').get_text()
+                schedule.description = soup
             if 'location' in data:
                 # print('location: ', data['location'])
                 schedule.location = data['location']

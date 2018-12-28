@@ -100,7 +100,26 @@ class Team8(object):
 
                     s = Schedule()
                     s.event_type = event_type
-                    s.title = title
+                    space_index = title.find(" ")
+                    # 過濾標題都有的日期
+                    if space_index > -1:
+                        s.title = title[space_index:]
+                    else:
+                        s.title = title
+
+                    check_start_time_index = title.find(":")
+                    # 看能不能拿到開始時間
+                    if check_start_time_index > -1:
+                        # 查看:前後數否為數字(前1或前2)
+                        before2 = title[check_start_time_index-2:check_start_time_index]
+                        before1 = title[check_start_time_index - 1:check_start_time_index]
+                        end2 = title[check_start_time_index+1:check_start_time_index+3]
+                        # print("before2 :{} before1:{}  end2: {}".format(before2, before1, end2))
+                        if before2.isdigit() and end2.isdigit():
+                            s.start_time = before2 + ":" + end2
+                        elif before1.isdigit() and end2.isdigit():
+                            s.start_time = "0" + before1 + ":" + end2
+
 
                     # handle member string in html text
                     member_match = member_regx.search(title)

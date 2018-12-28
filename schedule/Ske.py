@@ -33,7 +33,26 @@ class Ske(object):
         url = 'http://www.ske48.co.jp/schedule/?{query_params}'.format(query_params=link[3:])
         html = self._get_html(url)
         members = [a.string for a in html.select('.memberProfile span > a')]
-        return members
+        html_string = html.find('div', class_='detail').get_text()
+        # print(html_string)
+        check_start_time_index = html_string.find(":")
+        # 看能不能拿到開始時間
+        start_time = ""
+        if check_start_time_index > -1:
+            # 查看:前後數否為數字(前1或前2)
+            before2 = html_string[check_start_time_index - 2:check_start_time_index]
+            before1 = html_string[check_start_time_index - 1:check_start_time_index]
+            end2 = html_string[check_start_time_index + 1:check_start_time_index + 3]
+            # print("before2 :{} before1:{}  end2: {}".format(before2, before1, end2))
+            if before2.isdigit() and end2.isdigit():
+                start_time = before2 + ":" + end2
+            elif before1.isdigit() and end2.isdigit():
+                start_time = "0" + before1 + ":" + end2
+
+        return {
+            'members': members,
+            'start_time': start_time
+        }
 
     def get_schedule(self) -> [Schedule]:
         query_date = time.strptime(self.query_date, '%Y/%m/%d')
@@ -50,11 +69,12 @@ class Ske(object):
         for event in event_list:
             category = event.get('class')[0]
             event_link = event.find('a').get('href')
-            members = self._get_event_detail(event_link, category)
+            detail = self._get_event_detail(event_link, category)
             schedule = Schedule()
             schedule.event_type = self.category.get(category, '')
             schedule.title = event.find('a').string
-            schedule.members = members
+            schedule.members = detail["members"]
+            schedule.start_time = detail["start_time"]
             schedule_list.append(schedule)
 
         return schedule_list
