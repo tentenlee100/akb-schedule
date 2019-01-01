@@ -31,10 +31,10 @@ class Akb(object):
         month = time.strftime('%m', get_time)
         day = time.strftime('%d', get_time)
 
-        body = {'month': month, 'year': year, 'category': 0}
+        body = {'month': str(int(month)), 'year': year, 'category': 0}
         url = 'https://www.akb48.co.jp/public/api/schedule/calendar/'
         response_json = requests.post(url, data=body).json()
-        today_key = year + '_' + month + '_' + str(int(day))
+        today_key = year + '_' + str(int(month)) + '_' + str(int(day))
         members_api = 'https://www.akb48.co.jp/public/api/member/list/'
         members_dic = requests.post(members_api).json()["data"]
         # print(json.dumps(response_json, ensure_ascii=False))
