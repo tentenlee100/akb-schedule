@@ -32,7 +32,7 @@ class GetBirthMember(object):
             # group = member_string.rfind("\n", pre_index, find_index)
             start_index = member_string.rfind("\n", pre_index, find_index)
             end_index = member_string.find("\n", find_index)
-            birth_member = [x for x in member_string[start_index + 1:end_index].split(' ') if x != '']
+            birth_member = [x for x in member_string[start_index + 1 + 5:end_index].split(' ') if x != '']
             #  要抓到是哪團的
             group_line_end_index = member_string.rfind("=", 0, find_index)
             group_line_start_index = member_string.rfind("\n", 0, group_line_end_index)
@@ -43,14 +43,14 @@ class GetBirthMember(object):
                 group = self.group_dic[find_group[0]]
 
             # print(group)
-            if list(filter(lambda x: x["name"] == birth_member[1] and x["birth"] == birth_member[5],
+            if list(filter(lambda x: x["name"] == birth_member[0] and x["birth"] == birth_member[4],
                            members)).__len__() > 0:
                 pass
             else:
                 members.append({
-                    'name': birth_member[1],
-                    'birth': birth_member[5],
-                    'age': str(int(year) - int(birth_member[5][:4])),
+                    'name': birth_member[0],
+                    'birth': birth_member[4],
+                    'age': str(int(year) - int(birth_member[4][:4])),
                     'group': group
                 })
             # print(birth_member)
