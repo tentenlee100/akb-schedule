@@ -8,12 +8,12 @@ import re
 from datetime import datetime
 
 import requests
-from pyquery import PyQuery as pq
+from bs4 import BeautifulSoup
 
 try:
     from schedule.dataType.Schedule import Schedule
 except ImportError:  # for test
-    from dataType.Schedule import Schedule
+    from .dataType.Schedule import Schedule
 
 
 class Team8(object):
@@ -40,8 +40,6 @@ class Team8(object):
     def get_member(self) -> dict:
         """Get AKB48 Team 8 members
 
-        Args:
-            html: (string) html page
 
         Returns:
             AKB48 Team 8 member list. ex.
@@ -58,13 +56,15 @@ class Team8(object):
         with requests.Session() as s:
             r = s.get(url, headers=headers)
             if r.status_code == 200:
-                html_block = pq(r.text)
-                for i in html_block("optgroup option").items():
-                    parse_text = i.text().split("　")
-                    if len(parse_text) > 1:
-                        all_member_list[parse_text[0]] = (
-                            parse_text[1].replace(' ', ''))
-
+                html_block = BeautifulSoup(r.text, 'html.parser')
+                optgroups = html_block.find_all('optgroup')
+                for optgroup in optgroups:
+                    opts = optgroup.find_all('option')
+                    for opt in opts:
+                        parse_text = opt.get_text().split("　")
+                        if len(parse_text) > 1:
+                            all_member_list[parse_text[0]] = (
+                                parse_text[1].replace(' ', ''))
             else:
                 print("Connect to Team 8 website fail.")
 
@@ -79,25 +79,17 @@ class Team8(object):
         Returns:
         """
         member_regx = re.compile(r'.*（(.*)）$')
-        html_block = pq(html)
-        root = html_block(".scheduleTable tr")
+        html_block = BeautifulSoup(html, 'html.parser')
 
+        date_elements = html_block.find_all('th', 'date')
         event_list = []
-        for event_date in root.items():
-            check_date = pq(event_date.html())("th").text()
-
-            try:
-                query_day = int(check_date.split('日')[0])
-            except (ValueError, TypeError):
-                print("Team 8 Website changed design !!")
-
-            one_day_event_count = len(pq(event_date.html())(".mainTitle"))
-            if self.is_get_all_event or (self.today.day == query_day):
-                for i in range(0, one_day_event_count):
-                    title = pq(event_date.html())(".mainTitle").eq(i).text()
-                    event_type = pq(event_date.html())(
-                        ".category img").eq(i).attr("alt")
-
+        for date_element in date_elements:
+            if int(date_element.get_text().split('日')[0]) == self.today.day:
+                event_dl_list = date_element.parent.find('td').find_all('dl')
+                for event_dl in event_dl_list:
+                    event_dl.find("dd", 'mainTitle')
+                    title = event_dl.find("dd", 'mainTitle').get_text()
+                    event_type = event_dl.find("dt", 'category').find('img')['alt']
                     s = Schedule()
                     s.event_type = event_type
                     space_index = title.find(" ")
@@ -111,15 +103,14 @@ class Team8(object):
                     # 看能不能拿到開始時間
                     if check_start_time_index > -1:
                         # 查看:前後數否為數字(前1或前2)
-                        before2 = title[check_start_time_index-2:check_start_time_index]
+                        before2 = title[check_start_time_index - 2:check_start_time_index]
                         before1 = title[check_start_time_index - 1:check_start_time_index]
-                        end2 = title[check_start_time_index+1:check_start_time_index+3]
+                        end2 = title[check_start_time_index + 1:check_start_time_index + 3]
                         # print("before2 :{} before1:{}  end2: {}".format(before2, before1, end2))
                         if before2.isdigit() and end2.isdigit():
                             s.start_time = before2 + ":" + end2
                         elif before1.isdigit() and end2.isdigit():
                             s.start_time = "0" + before1 + ":" + end2
-
 
                     # handle member string in html text
                     member_match = member_regx.search(title)
@@ -138,8 +129,6 @@ class Team8(object):
                     # -handle
 
                     event_list.append(s)
-                    # break
-
         return event_list
 
     def get_schedule(self) -> [Schedule]:
