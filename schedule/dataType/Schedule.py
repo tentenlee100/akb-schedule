@@ -11,7 +11,7 @@ class Schedule(object):
     location = "" # NMB行事曆地點
 
     def __repr__(self):
-        return "<Schedule type:%s title:%s start_time:%s end_time:%s members:%s description:%s location:%s>" % (
+        return "\n<Schedule type:%s title:%s start_time:%s end_time:%s members:%s description:%s location:%s>" % (
         self.event_type, self.title, self.start_time, self.end_time, str(self.members), self.description, self.location)
 
     def __str__(self):
