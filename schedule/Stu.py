@@ -8,12 +8,12 @@ ref:
 from datetime import datetime
 
 import requests
-from pyquery import PyQuery as pq
+from bs4 import BeautifulSoup
 
 try:
     from schedule.dataType.Schedule import Schedule
 except ImportError:  # for test
-    from dataType.Schedule import Schedule
+    from .dataType.Schedule import Schedule
 
 
 class Stu(object):
@@ -37,6 +37,22 @@ class Stu(object):
         except (TypeError, ValueError):
             print("Please check your input date format (ex. 2018/10/10)")
 
+    @staticmethod
+    def _parse_start_date(string: str) -> str:
+        return_string = ""
+        check_start_time_index = string.find(":")
+        # 看能不能拿到開始時間
+        if check_start_time_index > -1:
+            # 查看:前後數否為數字(前1或前2)
+            before2 = string[check_start_time_index - 2:check_start_time_index]
+            before1 = string[check_start_time_index - 1:check_start_time_index]
+            end2 = string[check_start_time_index + 1:check_start_time_index + 3]
+            if before2.isdigit() and end2.isdigit():
+                return_string = before2 + ":" + end2
+            elif before1.isdigit() and end2.isdigit():
+                return_string = "0" + before1 + ":" + end2
+        return return_string
+
     def _parse_event(self, html) -> list:
         """Parse HTML string to get basic event list.
 
@@ -51,24 +67,25 @@ class Stu(object):
                 "detail_url": "/schedule/detail/2768"
             }
         """
-        html_block = pq(html)
-        root = html_block(".newsBlock > li")
+        html_block = BeautifulSoup(html, 'html.parser')
+        root = html_block.find('ul', 'newsBlock')
+        li_list = root.find_all('li')
 
         event_list = []
-        for event in root.items():
-            result = pq(event.html())
-
-            qdate = "{:0>2}.{:0>2}".format(self.today.month, self.today.day)
+        for event in li_list:
+            event_date = event.find('dl', 'eventListDate').find('dt').get_text()
+            query_date = "{:0>2}.{:0>2}".format(self.today.month, self.today.day)
             # match today (ex. "10.29")
-            if self.is_get_all_event or (qdate == result("dt").text()):
-                event_list.append({
-                    "event_type": result(".newsCateIco").text(),
-                    "title": result(".eventTit").text(),
-                    "detail_url": result("a").attr("href"),
-                })
+            if self.is_get_all_event or (query_date == event_date):
+                event_obj = {
+                    "event_type": event.find('span', 'newsCateIco').get_text(),
+                    "title": event.find('h2', 'eventTit').get_text(),
+                    "detail_url": event.find("a")["href"],
+                }
+                event_list.append(event_obj)
             else:
                 continue
-
+        print(event_list)
         return event_list
 
     def _parse_event_detail(self, event, html) -> Schedule:
@@ -81,52 +98,80 @@ class Stu(object):
         Returns: Schedule object
         """
 
-        html_block = pq(html)
-        root = html_block(".detailTxt")
-        raw_data = root("p").text()
-
+        html_block = BeautifulSoup(html, 'html.parser')
+        root = html_block.find("dd", "detailTxt")
+        raw_data = root.get_text()
+        print(raw_data)
         # parse member string
-        member = ""
-        try:
-            parse_txt = raw_data.split("掲載メンバー")
-            if len(parse_txt) > 1:
-                member_data = parse_txt[1].split()[0]
-                member = member_data.split("・")
-            else:
-                parse_txt = raw_data.split("出演メンバー")
-                if len(parse_txt) > 1:
-                    member_data = parse_txt[1].split()[0]
-                    member = member_data.split("・")
-
-        except IndexError:
-            pass
-        # -member
-
-        # parse time string
+        members = []
         start_time = ""
         end_time = ""
         try:
-            if event["event_type"] == "イベント":
-                start_time = raw_data.split("時間")[1].split()[0]
-                text = start_time.split("～")
-                if len(text) > 1:
-                    start_time = text[0]
-                    end_time = text[1]
+            all_p = root.find_all('p')
+            if len(all_p) == 0:
+                all_p = root.find_all('div')
 
-            elif event["event_type"] == "誕生日":
-                pass
-            elif event["event_type"] == "メディア":
-                start_time = raw_data.split("日時")[1].split()[0]
-            elif event["event_type"] == "公演":
-                text = raw_data.split("開場 / 開演")[1].split("/")
-                start_time = text[1]
-        except IndexError:
-            pass
+            detail_dic = {}
+
+            now_key = ""
+            detail_text = ""
+            for p in all_p:
+                # 是標題
+                if '●' == p.get_text()[:1] or '▼' == p.get_text()[:1]:
+                    # 先將之前的資訊存入detail_dic
+                    if now_key.__len__() != 0:
+                        detail_dic[now_key] = detail_text
+                        detail_text = ""
+                    # 找到新的key
+                    now_key = p.get_text().replace("●", '').replace('▼', '')
+                    continue
+                # 是內文
+                else:
+                    # 如果這個P沒有資料跳過
+                    if p.get_text().__len__() == 0:
+                        continue
+                    # 如果detail_text先前已經有資料的話先加上一個換行符號
+                    if detail_text.__len__() > 0:
+                        detail_text += '\n'
+                    detail_text += p.get_text()
+            # 最後一組時，不會存入detail_dic內，所以要再加入
+            if now_key.__len__() != 0 and detail_text.__len__() != 0:
+                detail_dic[now_key] = detail_text
+            # print(detail_dic)
+
+            # 開始判斷內文
+            for key in detail_dic.keys():
+                # 找成員
+                if 'メンバー' in key or '出演' in key:
+                    lines = detail_dic[key].split('\n')
+                    for line in lines:
+                        find_start = line.find('（')
+                        find_end = line.find('）')
+                        # 如果成員有用（）包起來的時候從包起來的地方取資料
+                        if find_start > -1 and find_end > -1 and line.find('MC :') == -1:
+                            split_point = line[find_start + 1:find_end].split("・")
+                        else:
+                            split_point = line.split("・")
+                        if split_point.__len__() > 1:
+                            members = split_point
+                    # 若判斷後沒有任何成員資料，且此內容只有一行時，將此行資訊直接放入members中，有可能是籠統成員 OR 成員只有一位
+                    if members.__len__() == 0 and lines.__len__() == 1:
+                        members = [lines[0]]
+
+                # 找開始時間結束時間
+                elif "時間" in key or "日時" in key or "開場 / 開演" in key:
+                    text = detail_dic[key].split("〜")
+                    start_time = self._parse_start_date(text[0])
+                    if text.__len__() > 1:
+                        end_time = self._parse_start_date(text[1])
+
+        except Exception as e:
+            print("caught", repr(e))
 
         s = Schedule()
         s.event_type = event["event_type"]
         s.title = event["title"]
-        s.members = member
+        s.members = members
         s.start_time = start_time
         s.end_time = end_time
         # print(s.__str__)
