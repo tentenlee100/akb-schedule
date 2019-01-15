@@ -25,7 +25,7 @@ class GetTheater(object):
         detail_url = a_tag['href']
         title = a_tag.get_text().replace('\t', '').replace('\xa0', '').replace('\u3000', '').replace('\r', '').replace(
             '\n', '').replace('�U', 'Ⅱ').replace('�V', 'Ⅲ').replace('�W', 'Ⅳ')
-        return_dic['title'] = title.split('〜 ')[1] if title.split('〜 ').__len__() > 1 else title
+        return_dic['title'] = title.split('開演')[1] if title.split('開演').__len__() > 1 else title
         return_dic['members'] = self._get_members(detail_url)
         return return_dic
 
