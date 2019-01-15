@@ -23,7 +23,7 @@ class GetBirthMember(object):
         html_string = s.get_text()
         start_index = html_string.find("==ＡＫＢ４８==")
         end_index = html_string.find("==待畢業/移籍成員")
-        member_string = html_string[start_index:end_index]
+        member_string = html_string[start_index:end_index].replace('AB20', 'AB 20').replace('AB19', 'AB 19')
         pre_index = 0
         find_index = member_string.find(query_date)
         year = datetime.datetime.today().strftime("%Y")
