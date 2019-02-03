@@ -24,7 +24,12 @@ class GetVideo(object):
             # 找下一個title
             start_title_index = txt.find(title_start_text, title_end_index)
             # 處理這個title間的連結
-            link_txt = txt[title_end_index:start_title_index]
+            # 不這樣處理 最後一個字會無法抓到，因為start_title_index = -1 [:-1] 是倒數第二字
+            if start_title_index > -1:
+                link_txt = txt[title_end_index:start_title_index]
+            else:
+                link_txt = txt[title_end_index:]
+
             link_list = [ x.strip().split('\r\n') for x in link_txt.split('\r\n\r\n') if x.strip().__len__() > 0]
             return_list.append({'title': title, 'links':link_list })
 
