@@ -170,7 +170,8 @@ class Stu(object):
 
         s = Schedule()
         s.event_type = event["event_type"]
-        s.title = event["title"]
+        title = event["title"].replace("↗︎", "↗")
+        s.title = title
         s.members = members
         s.start_time = start_time
         s.end_time = end_time
