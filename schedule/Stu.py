@@ -18,6 +18,57 @@ except ImportError:  # for test
 
 class Stu(object):
     query_date = datetime.today().strftime("%Y/%m/%d")
+    mapping_dic = {
+        "が": "が",
+        "ぎ": "ぎ",
+        "ぐ": "ぐ",
+        "げ": "げ",
+        "ご": "ご",
+        "ざ": "ざ",
+        "じ": "じ",
+        "ず": "ず",
+        "ぜ": "ぜ",
+        "ぞ": "ぞ",
+        "だ": "だ",
+        "ぢ": "ぢ",
+        "づ": "づ",
+        "で": "で",
+        "ど": "ど",
+        "ば": "ば",
+        "び": "び",
+        "ぶ": "ぶ",
+        "べ": "べ",
+        "ぼ": "ぼ",
+        "ぱ": "ぱ",
+        "ぴ": "ぴ",
+        "ぷ": "ぷ",
+        "ぺ": "ぺ",
+        "ぽ": "ぽ",
+# 片 假 名
+        "ガ": "ガ",
+        "ギ": "ギ",
+        "グ": "グ",
+        "ゲ": "ゲ",
+        "ゴ": "ゴ",
+        "ザ": "ザ",
+        "ジ": "ジ",
+        "ズ": "ズ",
+        "ゼ": "ゼ",
+        "ゾ": "ゾ",
+        "ダ": "ダ",
+        "デ": "デ",
+        "ド": "ド",
+        "バ": "バ",
+        "ビ": "ビ",
+        "ブ": "ブ",
+        "ベ": "ベ",
+        "ボ": "ボ",
+        "パ": "パ",
+        "ピ": "ピ",
+        "プ": "プ",
+        "ペ": "ペ",
+        "ポ": "ポ"
+    }
 
     def __init__(self, query_date="", debug=False):
         """Get query date string to datetime type.
@@ -36,6 +87,14 @@ class Stu(object):
             self.today = datetime.strptime(self.query_date, "%Y/%m/%d")
         except (TypeError, ValueError):
             print("Please check your input date format (ex. 2018/10/10)")
+
+    def check_title(self, title: str) -> str:
+        return_title = title
+        if "゙" in return_title or "゚" in return_title:
+            for key in self.mapping_dic.keys():
+                if key in return_title:
+                    return_title = return_title.replace(key, self.mapping_dic[key])
+        return return_title
 
     @staticmethod
     def _parse_start_date(string: str) -> str:
@@ -171,7 +230,7 @@ class Stu(object):
         s = Schedule()
         s.event_type = event["event_type"]
         title = event["title"].replace("↗︎", "↗")
-        s.title = title
+        s.title = self.check_title(title)
         s.members = members
         s.start_time = start_time
         s.end_time = end_time
