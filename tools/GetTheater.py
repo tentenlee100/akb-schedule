@@ -44,7 +44,7 @@ class GetTheater(object):
                     is_memeber_element = True
                     continue
                 if is_memeber_element:
-                    return_str = child.find().get_text().replace('\r\n', '\r\n\r\n').replace('※', '*').replace("��", "高")
+                    return_str = child.find().get_text().replace('\r\n', '\r\n\r\n').replace('※', '*').replace("��", "高").replace("�ｱ", "﨑")
                     is_memeber_element = False
 
         return return_str
