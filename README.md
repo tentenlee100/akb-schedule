@@ -1,3 +1,10 @@
+# 不維護此專案了
+有任何bug將會更新於 https://github.com/tentenlee100/PTT_AKB_POST
+
+此專案有目前專案的所有功能，再加上PTT發文而已
+
+
+
 akb-schedule
 ============
 
